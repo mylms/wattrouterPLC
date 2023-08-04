@@ -1,7 +1,7 @@
 # wattrouterPLC
 
 Implementace funkce "wattrouteru" pro PLC.
-Funkční blok je v jazyku ST (IEC 61131-3). Měl by být použitelný pro všechny standarní PLC umožňující programování v jazyce ST, nebo podobném.
+Funkční blok je v jazyku ST (IEC 61131-3). Měl by být použitelný pro všechny standardní PLC umožňující programování v jazyce ST, nebo podobném.
 
 Blok umožňuje dva režimy řízení HDO/FVE, které se doplňují.
 
@@ -9,17 +9,17 @@ Blok umožňuje dva režimy řízení HDO/FVE, které se doplňují.
 - Režim je aktivní, pokud je "signalHdo" true. Signál HDO je však možné simulovat vstupem "hdoSimulation". 
 - Režim je možné aktivovat/deaktivovat a nastavit mu časové okno, kdy je aktivní. Okno může být v rámci jednoho dne (např. 17:00 až 18:00), ale i v rámci více dní (např. 20:00 až 04:00).
 - Při překročení teploty na vstupu "hdoMaxTemp" se výkon výstupu sníží na 0.
-- Maximální výkon nahřívání (v %) je možné oemzit vstupem "hdoMaxPowerLx"
-- Krok přidávání/ubírání výkonu je možné nastavit vstupem "hdoPowerStep"
-- Režim HDO je možné forsovat signálem hdoForce -  v tomto případě je přihlíženo pouze na teplotu bojleru
+- Maximální výkon nahřívání (v %) je možné oemzit vstupem "hdoMaxPowerLx".
+- Krok přidávání/ubírání výkonu je možné nastavit vstupem "hdoPowerStep".
+- Režim HDO je možné forsovat signálem hdoForce -  v tomto případě je přihlíženo pouze na teplotu bojleru.
 
 Pokud jsou splněny podmínky startu, stoupá výkon interně až po hodnotu "hdoMaxPowerLx" po krocích "hdoPowerStep".
 
 *REŽIM FVE*
 - Režim je možné aktivovat/deaktivovat.
 - Při překročení teploty na vstupu "hdoMaxTemp" se výkon výstupu sníží na 0.
-- Maximální výkon nahřívání (v %) je možné oemzit vstupem "fveMaxPowerLx"
-- Krok přidávání/ubírání výkonu je možné nastavit vstupem "fvePowerStep"
+- Maximální výkon nahřívání (v %) je možné oemzit vstupem "fveMaxPowerLx".
+- Krok přidávání/ubírání výkonu je možné nastavit vstupem "fvePowerStep".
 - Nárust výkonu probíhá pouze tehdy, je-li přetok do sítě "currentLxpower" vyšší než "fveMinOverflow". Hodnota "currentLxpower" (typicky signál ze smartmeteru) musí být záporná (=přetok), hodnota "fveMinOverflow" kladná.
 - Pokles výkonu probíhá, pokud je odběr ze sítě větší než 50 W (je nutné nastavit v bloku, tato verze nepočítá s uživatelským nastavením).
 
