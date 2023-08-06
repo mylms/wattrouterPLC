@@ -106,20 +106,22 @@ FUNCTION_BLOCK SolarHeating
   // OHREV NADRZE PRES HDO
   //
   //
-  IF((hdoForce AND thermostatHdo) OR (hdoActive AND (signalHdo OR hdoSimulation) AND timeWindowHdo AND thermostatHdo)) THEN
-    //simulace natapeni NEBO
-    
-    //ohrev pres HDO aktivni
-    //je signal HDO, nebo simulace HDO
-    //je zaroven aktivni okno pro signal HDO
-    //je pozadavek na nahrivani od teploty
-    outputPowerHdoL1 := outputPowerHdoL1 + hdoPowerStep;
-    outputPowerHdoL2 := outputPowerHdoL2 + hdoPowerStep;
-    outputPowerHdoL3 := outputPowerHdoL3 + hdoPowerStep;
-  ELSE
-    outputPowerHdoL1 := outputPowerHdoL1 - hdoPowerStep;
-    outputPowerHdoL2 := outputPowerHdoL2 - hdoPowerStep;
-    outputPowerHdoL3 := outputPowerHdoL3 - hdoPowerStep;
+  IF (edgeSignal) THEN
+    IF((hdoForce AND thermostatHdo) OR (hdoActive AND (signalHdo OR hdoSimulation) AND timeWindowHdo AND thermostatHdo)) THEN
+      //simulace natapeni NEBO
+
+      //ohrev pres HDO aktivni
+      //je signal HDO, nebo simulace HDO
+      //je zaroven aktivni okno pro signal HDO
+      //je pozadavek na nahrivani od teploty
+      outputPowerHdoL1 := outputPowerHdoL1 + hdoPowerStep;
+      outputPowerHdoL2 := outputPowerHdoL2 + hdoPowerStep;
+      outputPowerHdoL3 := outputPowerHdoL3 + hdoPowerStep;
+    ELSE
+      outputPowerHdoL1 := outputPowerHdoL1 - hdoPowerStep;
+      outputPowerHdoL2 := outputPowerHdoL2 - hdoPowerStep;
+      outputPowerHdoL3 := outputPowerHdoL3 - hdoPowerStep;
+    END_IF;
   END_IF;
 
   //omezeni vykonu
@@ -136,13 +138,13 @@ FUNCTION_BLOCK SolarHeating
   ELSE
     hdoL2AtFullPower := FALSE;
   END_IF;
-  
-   IF(outputPowerHdoL3 > hdoMaxPowerL3) THEN
-    outputPowerHdoL3 := hdoMaxPowerL3;
-    hdoL3AtFullPower := TRUE;
-  ELSE
-    hdoL3AtFullPower := FALSE;
-  END_IF;
+
+ IF(outputPowerHdoL3 > hdoMaxPowerL3) THEN
+  outputPowerHdoL3 := hdoMaxPowerL3;
+  hdoL3AtFullPower := TRUE;
+ELSE
+  hdoL3AtFullPower := FALSE;
+END_IF;
 
   //ochrana proti zapornemu vykonu
   IF(outputPowerHdoL1 < 0.0) THEN
