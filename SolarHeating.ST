@@ -106,10 +106,6 @@ FUNCTION_BLOCK SolarHeating
   // OHREV NADRZE PRES HDO
   //
   //
-  outputPowerHdoL1 := 0.0;  //pozadovany vykon L1 = 0%
-  outputPowerHdoL2 := 0.0;  //pozadovany vykon L1 = 0%
-  outputPowerHdoL3 := 0.0;  //pozadovany vykon L1 = 0%
-
   IF((hdoForce AND thermostatHdo) OR (hdoActive AND (signalHdo OR hdoSimulation) AND timeWindowHdo AND thermostatHdo)) THEN
     //simulace natapeni NEBO
     
