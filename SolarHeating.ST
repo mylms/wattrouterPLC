@@ -19,7 +19,8 @@ FUNCTION_BLOCK SolarHeating
      fveMaxPowerL2    : real;   //maximalni vykon ohrevu pro FVE v % L2
      fveMaxPowerL3    : real;   //maximalni vykon ohrevu pro FVE v % L3
      fvePowerStep     : real;   //vykonovy skok za 1 s v %
-     fveMinOverflow   : real;   //minimalni hodnota pretoku, pri kterem je zvysovan vykon ohrevu (napr. 100 W)
+     fveMinOverflow   : real;   //minimalni hodnota pretoku, pri kterem je zvysovan vykon ohrevu (napr. 100 W = pretok)
+     fveMaxConsumption: real;   //minimalni hodnota odberu, pri kterem je snizovan vykon ohrevu (napr. 100 W = odber)
 
      //Spolecne promenne
      currentTime            : time;   //aktualni cas (hh:mm)
@@ -28,6 +29,7 @@ FUNCTION_BLOCK SolarHeating
      currentL3power         : real;   //aktualni vykon L3 (- = pretok, + = odber) W
      signalHdo              : bool;   //signal HDO
      tempNadrz              : real;   //aktualni teplota nadrze
+     thermostatHyst         : real := 2.0;  //zaporna hystereze termsostatu
      edgeSignal             : bool;   //signal hrany pro zvysovani/snizovani vykonu (aktivni pouze jeden cyklus kazdou sekundu)
   END_VAR
   VAR_OUTPUT
@@ -45,7 +47,6 @@ FUNCTION_BLOCK SolarHeating
     timeWindowHdo           : bool;   //okno signalu HDO
     thermostatHdo           : bool;   //termostat pro HDO
     thermostatFve           : bool;   //termostat pro FVE
-    thermostatHyst          : real := 2.0;  //zaporna hystereze termsostatu
 
     hdoL1AtFullPower        : bool;   //L1 HDO na plny vykon
     hdoL2AtFullPower        : bool;   //L1 HDO na plny vykon
@@ -83,11 +84,15 @@ FUNCTION_BLOCK SolarHeating
   END_IF;
 
   //termostat HDO
+  //zadana maximalni teplota je vypinaci teplota
+  //hystereze je pouze zaporna, pri poklesu teploty pod uroven maxTemp - thermostatHyst se termostat sepne
+  //maxTemp = 50,  thermostatHyst = 2
+  //pri prekroceni 50 stupnu ohrev vypne, pri poklesu pod 48 stupnu ohrev zapne
   IF(tempNadrz >= hdoMaxTemp) THEN
     //bojler nahraty
     thermostatHdo := false;
   END_IF;
-  IF(tempNadrz < hdoMaxTemp - thermostatHyst) THEN
+  IF(tempNadrz <= hdoMaxTemp - thermostatHyst) THEN
     thermostatHdo := true;
   END_IF;
 
@@ -96,7 +101,7 @@ FUNCTION_BLOCK SolarHeating
     //bojler nahraty
     thermostatFve := false;
   END_IF;
-  IF(tempNadrz < fveMaxTemp - thermostatHyst) THEN
+  IF(tempNadrz <= fveMaxTemp - thermostatHyst) THEN
     thermostatFve := true;
   END_IF;
 
@@ -139,12 +144,12 @@ FUNCTION_BLOCK SolarHeating
     hdoL2AtFullPower := FALSE;
   END_IF;
 
- IF(outputPowerHdoL3 > hdoMaxPowerL3) THEN
-  outputPowerHdoL3 := hdoMaxPowerL3;
-  hdoL3AtFullPower := TRUE;
-ELSE
-  hdoL3AtFullPower := FALSE;
-END_IF;
+  IF(outputPowerHdoL3 > hdoMaxPowerL3) THEN
+    outputPowerHdoL3 := hdoMaxPowerL3;
+    hdoL3AtFullPower := TRUE;
+  ELSE
+    hdoL3AtFullPower := FALSE;
+  END_IF;
 
   //ochrana proti zapornemu vykonu
   IF(outputPowerHdoL1 < 0.0) THEN
@@ -165,7 +170,7 @@ END_IF;
   // OHREV BOJLERU PRES FVE
   //
   //
-  fveMinOverflow := ABS(fveMinOverflow) * -1;   //uprava hodnoty na zaporny vykon
+  fveMinOverflow := ABS(fveMinOverflow) * -1.0;   //uprava hodnoty na zaporny vykon
   //je nutne, aby pretok do site měl zapornou hodnotu
   IF(edgeSignal) THEN
   //cyklovani po 1 s
@@ -190,17 +195,17 @@ END_IF;
         outputPowerFveL3 := outputPowerFveL3 + fvePowerStep;
       END_IF;
 
-      IF(currentL1power > 50.0) THEN
+      IF(currentL1power >= fveMaxConsumption) THEN
         //odber ze site vetsi nez 50 W
         outputPowerFveL1 := outputPowerFveL1 - fvePowerStep;
       END_IF;
 
-      IF(currentL2power > 50.0) THEN
+      IF(currentL2power >= fveMaxConsumption) THEN
         //odber ze site vetsi nez 50 W
         outputPowerFveL2 := outputPowerFveL2 - fvePowerStep;
       END_IF;
 
-      IF(currentL3power > 50.0) THEN
+      IF(currentL3power >= fveMaxConsumption) THEN
         //odber ze site vetsi nez 50 W
         outputPowerFveL3 := outputPowerFveL3 - fvePowerStep;
       END_IF;
@@ -213,21 +218,21 @@ END_IF;
   END_IF;
 
   //omezeni vykonu
-  IF(outputPowerFveL1 > fveMaxPowerL1) THEN
+  IF(outputPowerFveL1 >= fveMaxPowerL1) THEN
     outputPowerFveL1 := fveMaxPowerL1;
     fveL1AtFullPower := TRUE;
   ELSE
     fveL1AtFullPower := FALSE;
   END_IF;
 
-  IF(outputPowerFveL2 > fveMaxPowerL2) THEN
+  IF(outputPowerFveL2 >= fveMaxPowerL2) THEN
     outputPowerFveL2 := fveMaxPowerL2;
     fveL2AtFullPower := TRUE;
   ELSE
     fveL2AtFullPower := FALSE;
   END_IF;
 
-  IF(outputPowerFveL3 > fveMaxPowerL3) THEN
+  IF(outputPowerFveL3 >= fveMaxPowerL3) THEN
     outputPowerFveL3 := fveMaxPowerL3;
     fveL3AtFullPower := TRUE;
   ELSE
