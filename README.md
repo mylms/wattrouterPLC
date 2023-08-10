@@ -1,5 +1,5 @@
 # wattrouterPLC
-v20230807
+v20230810
 
 Implementace funkce "wattrouteru" pro PLC.
 Funkční blok je v jazyku ST (IEC 61131-3). Měl by být použitelný pro všechny standardní PLC umožňující programování v jazyce ST, nebo podobném.
