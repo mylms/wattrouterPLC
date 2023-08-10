@@ -1,4 +1,4 @@
-//v20230807
+//v20230810
 FUNCTION_BLOCK SolarHeating
    VAR_INPUT
      //funkce HDO - displej
@@ -7,19 +7,19 @@ FUNCTION_BLOCK SolarHeating
      hdoForce         : bool;   //spusteni nuceneho ohrevu
      hdoOnTime        : time;   //cas od kdy je ohrev aktivni (hh:mm)
      hdoOffTime       : time;   //cas do kdy je ahrev aktivni (hh:mm)
-     hdoMaxTemp       : real;   //maximalni teplota ohrevu pro HDO
-     hdoPowerStep     : real;   //vykonovy skok za 1 s v %
-     hdoMaxPowerL1    : real;   //maximalni vykon ohrevu pro HDO v % L1
-     hdoMaxPowerL2    : real;   //maximalni vykon ohrevu pro HDO v % L2
-     hdoMaxPowerL3    : real;   //maximalni vykon ohrevu pro HDO v % L3
+     hdoMaxTemp       : real;   //maximalni teplota ohrevu pro HDO (0 - 95)
+     hdoPowerStep     : real;   //vykonovy skok za 1 s v % (0.1 - 100)
+     hdoMaxPowerL1    : real;   //maximalni vykon ohrevu pro HDO v % L1 (0 - 100)
+     hdoMaxPowerL2    : real;   //maximalni vykon ohrevu pro HDO v % L2 (0 - 100)
+     hdoMaxPowerL3    : real;   //maximalni vykon ohrevu pro HDO v % L3 (0 - 100)
 
      //funkce FVE - displej
      fveActive        : bool;   //ohrev pretoky z FVE aktivní
-     fveMaxTemp       : real;   //maximalni teplota ohrevu pro FVE
-     fveMaxPowerL1    : real;   //maximalni vykon ohrevu pro FVE v % L1
-     fveMaxPowerL2    : real;   //maximalni vykon ohrevu pro FVE v % L2
-     fveMaxPowerL3    : real;   //maximalni vykon ohrevu pro FVE v % L3
-     fvePowerStep     : real;   //vykonovy skok za 1 s v %
+     fveMaxTemp       : real;   //maximalni teplota ohrevu pro FVE (0 - 95)
+     fveMaxPowerL1    : real;   //maximalni vykon ohrevu pro FVE v % L1 (0 - 100)
+     fveMaxPowerL2    : real;   //maximalni vykon ohrevu pro FVE v % L2 (0 - 100)
+     fveMaxPowerL3    : real;   //maximalni vykon ohrevu pro FVE v % L3 (0 - 100)
+     fvePowerStep     : real;   //vykonovy skok za 1 s v % (0.1 - 100)
      fveMinOverflow   : real;   //minimalni hodnota pretoku, pri kterem je zvysovan vykon ohrevu (napr. 100 W = pretok)
      fveMaxConsumption: real;   //minimalni hodnota odberu, pri kterem je snizovan vykon ohrevu (napr. 100 W = odber)
 
@@ -65,6 +65,99 @@ FUNCTION_BLOCK SolarHeating
   END_VAR
   VAR_TEMP
   END_VAR
+  
+  //Limity promennych
+  //hdoMaxTemp
+  IF(hdoMaxTemp < 0.0) THEN
+    hdoMaxTemp := 0.0;
+  END_IF;
+  
+  IF(hdoMaxTemp > 95.0) THEN
+    hdoMaxTemp := 95.0;
+  END_IF;
+  
+  //fveMaxTemp
+  IF(fveMaxTemp < 0.0) THEN
+    fveMaxTemp := 0.0;
+  END_IF;
+
+  IF(fveMaxTemp > 95.0) THEN
+    fveMaxTemp := 95.0;
+  END_IF;
+  
+  //hdoPowerStep
+  IF(hdoPowerStep < 0.1) THEN
+    hdoPowerStep := 0.1;
+  END_IF;
+
+  IF(hdoPowerStep > 100.0) THEN
+    hdoPowerStep := 100.0;
+  END_IF;
+  
+  //fvePowerStep
+  IF(fvePowerStep < 0.1) THEN
+    fvePowerStep := 0.1;
+  END_IF;
+
+  IF(fvePowerStep > 100.0) THEN
+    fvePowerStep := 100.0;
+  END_IF;
+  
+  //hdoMaxPowerL1
+  IF(hdoMaxPowerL1 < 0.0) THEN
+    hdoMaxPowerL1 := 0.0;
+  END_IF;
+
+  IF(hdoMaxPowerL1 > 100.0) THEN
+    hdoMaxPowerL1 := 100.0;
+  END_IF;
+  
+  //hdoMaxPowerL2
+  IF(hdoMaxPowerL2 < 0.0) THEN
+    hdoMaxPowerL2 := 0.0;
+  END_IF;
+
+  IF(hdoMaxPowerL2 > 100.0) THEN
+    hdoMaxPowerL2 := 100.0;
+  END_IF;
+  
+  //hdoMaxPowerL3
+  IF(hdoMaxPowerL3 < 0.0) THEN
+    hdoMaxPowerL3 := 0.0;
+  END_IF;
+
+  IF(hdoMaxPowerL3 > 100.0) THEN
+    hdoMaxPowerL3 := 100.0;
+  END_IF;
+  
+  //fveMaxPowerL1
+  IF(fveMaxPowerL1 < 0.0) THEN
+    fveMaxPowerL1 := 0.0;
+  END_IF;
+
+  IF(fveMaxPowerL1 > 100.0) THEN
+    fveMaxPowerL1 := 100.0;
+  END_IF;
+
+  //fveMaxPowerL2
+  IF(fveMaxPowerL2 < 0.0) THEN
+    fveMaxPowerL2 := 0.0;
+  END_IF;
+
+  IF(fveMaxPowerL2 > 100.0) THEN
+    fveMaxPowerL2 := 100.0;
+  END_IF;
+
+  //fveMaxPowerL3
+  IF(fveMaxPowerL3 < 0.0) THEN
+    fveMaxPowerL3 := 0.0;
+  END_IF;
+
+  IF(fveMaxPowerL3 > 100.0) THEN
+    fveMaxPowerL3 := 100.0;
+  END_IF;
+
+
 
   //Casove okno HDO
   IF(hdoOnTime < hdoOffTime) THEN
@@ -86,9 +179,10 @@ FUNCTION_BLOCK SolarHeating
 
   //termostat HDO
   //zadana maximalni teplota je vypinaci teplota
-  //hystereze je pouze zaporna, pri poklesu teploty pod uroven maxTemp - thermostatHyst se termostat sepne
+  //hystereze je pouze zaporna, pri poklesu teploty pod uroven (maxTemp - thermostatHyst) se termostat sepne
   //maxTemp = 50,  thermostatHyst = 2
   //pri prekroceni 50 stupnu ohrev vypne, pri poklesu pod 48 stupnu ohrev zapne
+  thermostatHyst := ABS(thermostatHyst);
   IF(tempNadrz >= hdoMaxTemp) THEN
     //bojler nahraty
     thermostatHdo := false;
@@ -301,5 +395,25 @@ FUNCTION_BLOCK SolarHeating
     outputPowerL3 :=  outputPowerFveL3;
     L3FullPower := fveL3AtFullPower;
   END_IF;
+  
+  
+  //ochrana proti prehrati
+  //pri ohrati 1 stupen nad maximalni teplotu zablokovat vystupy
+  IF (hdoMaxTemp >= fveMaxTemp) THEN
+    //vyssi teplota HDO
+    IF(tempNadrz > hdoMaxTemp + 1.0) THEN
+      outputPowerL1 := 0.0;
+      outputPowerL2 := 0.0;
+      outputPowerL3 := 0.0;
+    END_IF;
+  ELSE
+    //vyssi teplota FVE
+    IF(tempNadrz > fveMaxTemp + 1.0) THEN
+      outputPowerL1 := 0.0;
+      outputPowerL2 := 0.0;
+      outputPowerL3 := 0.0;
+    END_IF;
+  END_IF;
+
 
 END_FUNCTION_BLOCK
