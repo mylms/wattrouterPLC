@@ -182,6 +182,7 @@ FUNCTION_BLOCK SolarHeating
   //hystereze je pouze zaporna, pri poklesu teploty pod uroven (maxTemp - thermostatHyst) se termostat sepne
   //maxTemp = 50,  thermostatHyst = 2
   //pri prekroceni 50 stupnu ohrev vypne, pri poklesu pod 48 stupnu ohrev zapne
+  //U ohrevu pres FVE je hystereze polovicni kvůli maximalnimu vyuziti
   thermostatHyst := ABS(thermostatHyst);
   IF(tempNadrz >= hdoMaxTemp) THEN
     //bojler nahraty
@@ -196,7 +197,8 @@ FUNCTION_BLOCK SolarHeating
     //bojler nahraty
     thermostatFve := false;
   END_IF;
-  IF(tempNadrz <= fveMaxTemp - thermostatHyst) THEN
+  IF(tempNadrz <= fveMaxTemp - thermostatHyst / 2.0) THEN
+    //hystereze je polovicni oproti ohrevu HDO
     thermostatFve := true;
   END_IF;
 
