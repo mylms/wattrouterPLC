@@ -1,4 +1,4 @@
-//v20230810
+//v20230916
 FUNCTION_BLOCK SolarHeating
    VAR_INPUT
      //funkce HDO - displej
